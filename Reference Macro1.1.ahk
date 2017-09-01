@@ -1,4 +1,4 @@
-﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ; #Warn  ; Enable warnings to assist with detecting common errors.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
@@ -16,7 +16,7 @@ Tempclip = 0
 exityes = 1
 counter = 0
 skip = 0
-Version_number = 1.0
+Version_number = 1.1
 
 Menu, Tray, NoStandard
 Menu, Tray, add, Quit,exitmacro
@@ -25,7 +25,7 @@ Menu, Tray, add, Check Box for Update,Boxsite
 ;******************************************************************
 ;**************** Creates Manual Names ****************************
 ;******************************************************************
-Global Omm_Name , Sysop_Name , Spec_Name , DA_Name , TA_Name , Tblshoot_Name, Other
+Global Omm_Name , Sysop_Name , Spec_Name , DA_Name , TA_Name , Tblshoot_Name, Other, Arbortext_ID
 Omm_Name := "Operation and Maintenance Manual"
 Sysop_Name := "Systems Operation"
 Spec_Name := "Specifications"
@@ -116,7 +116,7 @@ Gosub, IEnumberguichcek ; goes to the subroutine to set the check boxes and edit
 If Exityes = 1
 {
    Sleep 100
-   WinActivate, Arbortext
+   WinActivate, ahk_id %Arbortext_ID%
    Sleep 100
    Exityes = 0
 }
@@ -419,6 +419,8 @@ Macrostart:
       Gui, %guinumber%:Destroy
       sleep 3000
    }
+   
+   Arbortext_ID:= Count_Arbortext_Windows()
    ActivateResourcemanager()
    
    Resourcemove()
@@ -465,7 +467,7 @@ Macrostart:
    
    SetTitleMatchMode,2
    
-   WinActivate Arbortext ; activate arbortext window
+   WinActivate ahk_id %Arbortext_ID% ; activate arbortext window
    sleep 100
    WinWaitActive, Arbortext,,10
    sleep 750
@@ -475,8 +477,29 @@ Macrostart:
    Return
 }
 
-
 SetTitleMatchMode, 2
+
+Count_Arbortext_Windows()
+{
+   winget, myList, list, Arbortext
+   If mylist = 1
+      Winget, Arbortext_ID, ID, Arbortext
+   else
+    {
+    Gui,99:Add, Text, ,There Are Multiple Arbortext windows, Please double click the location on the window that you want to create the Reference in.
+     Gui,99: Show,, Click on Arbortext
+   gosub, doublecheck
+   Sleep 300
+   Send {Up}
+   Sleep 300
+   SEnd {Down}
+   Winget, Arbortext_ID,ID,A
+   Gui, 99:Destroy
+   }   
+   return Arbortext_ID
+}
+
+
 winmovemsgbox:
 {
    SetTimer, WinMoveMsgBox, OFF 
@@ -489,7 +512,7 @@ winmovemsgbox:
 CreateIEsearch:
 {
    SetTitleMatchMode,2
-   WinActivate Arbortext
+   WinActivate ahk_id %Arbortext_ID%
    sleep 100
    WinWaitActive, Arbortext,,30
    sleep 1000
@@ -547,7 +570,7 @@ CreateIEsearch:
    
    WinMinimize, Search AHK_class TTAFrameXClass
    sleep 100
-   Winactivate, Arbortext AHK_class TTAFrameXClass
+   Winactivate, ahk_id  %Arbortext_ID%
    Sleep 10
    WinWaitActive,Arbortext,,5
    Sleep 150
@@ -660,7 +683,7 @@ CreateIEsearch:
    sleep 200
    Send {Alt up}
    Sleep 200
-   WinActivate Arbortext
+   WinActivate ahk_id %Arbortext_ID%
    Sleep 10
    WinWaitActive, Arbortext
    Sleep 1000
@@ -708,7 +731,7 @@ CreateIEsearch:
    Send {Alt up}
    +++SetTitleMatchMode, 2
    sleep 1000	
-   WinActivate, Arbortext
+   WinActivate, ahk_id %Arbortext_ID%
    sleep 10
    WinWaitActive, Arbortext
    Sleep 1000
@@ -968,15 +991,11 @@ resourceexitst:
    
    doublecheck:
    {
-      sleep 100
-      If doubleclick = 1
-      Return
-      
-      Else if Doubleclick = 0
+      while Doubleclick != 1
       {
-         GOsub doublecheck	
-         Return
+      sleep 100
       }
+ 
       Return
    }
    
